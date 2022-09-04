@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import '../stylesheets/Question.css';
 
 class Question extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       visibleAnswer: false,
     };
@@ -21,8 +21,8 @@ class Question extends Component {
         <div className='Question-status'>
           <img
             className='category'
-            alt={`${category.toLowerCase()}`}
-            src={`${category.toLowerCase()}.svg`}
+            alt={`${category.type.toLowerCase()}`}
+            src={`${category.type.toLowerCase()}.svg`}
           />
           <div className='difficulty'>Difficulty: {difficulty}</div>
           <img
