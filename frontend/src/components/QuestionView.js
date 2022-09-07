@@ -11,7 +11,7 @@ class QuestionView extends Component {
       questions: [],
       page: 1,
       totalQuestions: 0,
-      categories: {},
+      categories: [],
       currentCategory: null,
     };
   }
@@ -84,7 +84,7 @@ class QuestionView extends Component {
 
   submitSearch = (searchTerm) => {
     $.ajax({
-      url: `/questions`, //TODO: update request URL
+      url: `/search`, //TODO: update request URL
       type: 'POST',
       dataType: 'json',
       contentType: 'application/json',
@@ -138,18 +138,18 @@ class QuestionView extends Component {
             Categories
           </h2>
           <ul>
-            {Object.keys(this.state.categories).map((id) => (
+            {this.state.categories.map(category => (
               <li
-                key={id}
+                key={category.id}
                 onClick={() => {
-                  this.getByCategory(id);
+                  this.getByCategory(category.id);
                 }}
               >
-                {this.state.categories[id].type}
+                {category.type}
                 <img
                   className='category'
-                  alt={`${this.state.categories[id].type.toLowerCase()}`}
-                  src={`${this.state.categories[id].type.toLowerCase()}.svg`}
+                  alt={`${category.type.toLowerCase()}`}
+                  src={`${category.type.toLowerCase()}.svg`}
                 />
               </li>
             ))}
@@ -158,16 +158,16 @@ class QuestionView extends Component {
         </div>
         <div className='questions-list'>
           <h2>Questions</h2>
-          {this.state.questions.map((q, ind) => (
-            <Question
-              key={q.id}
-              question={q.question}
-              answer={q.answer}
-              category={this.state.categories[q.category]}
-              difficulty={q.difficulty}
-              questionAction={this.questionAction(q.id)}
-            />
-          ))}
+          {this.state.questions.map((q, ind) => {
+            return  <Question
+                      key={ind}
+                      question={q.question}
+                      answer={q.answer}
+                      category={this.state.categories[q.category - 1]}
+                      difficulty={q.difficulty}
+                      questionAction={this.questionAction(q.id)}
+                    />
+          })}
           <div className='pagination-menu'>{this.createPagination()}</div>
         </div>
       </div>

@@ -9,6 +9,7 @@ psycopg2 = "*"
 flask-sqlalchemy = "*"
 flask-cors = "*"
 postgres = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
