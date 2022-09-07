@@ -1,9 +1,13 @@
 import unittest
 import json
+import os
 from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
 
 from flaskr import create_app
 from models import setup_db, Question, Category
+
+load_dotenv()
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -13,6 +17,12 @@ class TriviaTestCase(unittest.TestCase):
         """Define test variables and initialize app."""
         self.app = create_app()
         self.client = self.app.test_client
+        HOST = os.getenv('TEST_DB_HOST')
+        USER = os.getenv('TEST_DB_USER')
+        PASSWORD = os.getenv('TEST_DB_PASSWORD')
+        NAME = os.getenv('TEST_DB_NAME')
+        database_path =\
+            f'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}/{NAME}'
         self.database_path =\
             "postgresql://postgres:admin@localhost:5432/trivia_test"
         setup_db(self.app, self.database_path)
@@ -36,13 +46,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data['categories']))
         self.assertTrue(data['success'])
 
-    def test_404_list_categories(self):
-        res = self.client().get('/categories')
+    def test_405_list_categories(self):
+        res = self.client().delete('/categories')
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(res.status_code, 405)
         self.assertFalse(data['success'])
-        self.assertEqual(data['error'], 404)
+        self.assertEqual(data['error'], 405)
         self.assertTrue(data['message'])
 
     def test_paginated_questions(self):
@@ -63,10 +73,10 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'Not found')
 
     def test_delete_questions(self):
-        res = self.client().delete('/questions/14')
+        res = self.client().delete('/questions/15')
         data = json.loads(res.data)
 
-        question = Question.query.filter(Question.id == 14).one_or_none()
+        question = Question.query.filter(Question.id == 15).one_or_none()
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
@@ -159,8 +169,19 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['question'])
 
     def test_for_unavailable_quiz_questions(self):
-        res = self.client().get('/quizzes')
+        res = self.client().post('/quizzes',
+                                 json={'quiz_category':
+                                       {
+                                        'type': 'history',
+                                        'id': 40005
+                                       },
+                                       'previous_questions': [51]
+                                       })
         data = json.loads(res.data)
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 404)
+        self.assertTrue(data['message'])
 
     """
     TODO

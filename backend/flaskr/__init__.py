@@ -1,5 +1,4 @@
 from random import randint, choice
-from unicodedata import category
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -125,27 +124,30 @@ def create_app(test_config=None):
 
     @app.route('/quizzes', methods=['POST'])
     def quizzes():
-        category = request.get_json()['quiz_category']
+        quiz_category = request.get_json()['quiz_category']
         prev_quesitons = request.get_json()['previous_questions']
-
-        if category['type'] == 'all':
-            query = \
-                Question.query.filter(Question.id.not_in(prev_quesitons)).all()
-        else:
-            query = Question.query.filter(Question.category ==
-                                          category['id'], Question.id.
-                                          not_in(prev_quesitons)).all()
-
-        if len(query) > 0:
-            question = choice([question.format() for question in query])
+        category = Category.query.filter(Category.id ==
+                                         quiz_category['id']).one_or_none()
+        if category:
+            if quiz_category['type'] == 'all':
+                query = \
+                    Question.query.filter(Question.id.not_in(
+                        prev_quesitons)).all()
+            else:
+                query = Question.query.filter(Question.category ==
+                                              quiz_category['id'], Question.id.
+                                              not_in(prev_quesitons)).all()
+            if len(query) > 0:
+                question = choice([question.format() for question in query])
+                return jsonify({
+                    'success': True,
+                    'question': question
+                })
             return jsonify({
                 'success': True,
-                'question': question
+                'question': False
             })
-        return jsonify({
-            'success': True,
-            'question': False
-        })
+        abort(404)
 
     @app.errorhandler(404)
     def not_found(error):
